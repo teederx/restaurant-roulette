@@ -22,7 +22,7 @@ class _SpinWheelTabState extends ConsumerState<SpinWheelTab> {
   final StreamController<int> controller = StreamController<int>.broadcast();
   int selectedRestaurantIndex = 0;
   bool animationStop = true;
-  bool hasSpun = false; // 👈 track if user tapped at least once
+  bool hasSpun = false;
 
   @override
   void dispose() {
@@ -100,12 +100,17 @@ class _SpinWheelTabState extends ConsumerState<SpinWheelTab> {
                       animationStop
                           ? () {
                             setState(() {
-                              hasSpun = true; // 👈 show wheel
+                              hasSpun = true;
+                              animationStop = false;
+                              selectedRestaurantIndex = 0; // reset
                             });
-                            toggleAnimation();
 
                             final index = Random().nextInt(restaurants.length);
-                            controller.add(index);
+
+                            // Delay sending to controller until after first frame
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              controller.add(index);
+                            });
 
                             setState(() {
                               selectedRestaurantIndex = index;
